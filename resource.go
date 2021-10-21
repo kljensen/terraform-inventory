@@ -77,22 +77,26 @@ func NewResource(keyName string, state resourceState) (*Resource, error) {
 	m := nameParser.FindStringSubmatch(keyName)
 
 	// This should not happen unless our regex changes.
-	if len(m) != 4 && len(m) != 5 {
+	if len(m) != 5 {
 		return nil, fmt.Errorf("couldn't parse resource keyName: %s", keyName)
 	}
 
 	counterNumeric := 0
-	counterStr := ""
+	// If we have something in m[3] - this should be str counter
+	counterStr := m[3]
 	var err error
-	if m[3] != "" {
-		// The third section should be the index, if it's present. Not sure what
+
+	if m[4] != "" {
+		// The fouth section should be the index, if it's present. Not sure what
 		// else we can do other than panic (which seems highly undesirable) if that
 		// isn't the case. With Terraform 0.12 for_each syntax, index can also be
 		// a non-numeric string (loop over any string value).
-		counterNumeric, err = strconv.Atoi(m[3])
+		counterNumeric, err = strconv.Atoi(m[4])
 		if err != nil {
 			counterNumeric = 0
-			counterStr = m[3]
+			if m[3] == "" {
+				counterStr = m[4]
+			}
 		}
 	}
 
